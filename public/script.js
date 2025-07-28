@@ -8,8 +8,8 @@ const wrapper = document.getElementById('video-wrapper');
 let successTimerId = null;
 let labeledFaceDescriptors;
 let faceMatcher;
-let canvas;
-let detectionInterval;
+let canvas = null;
+let detectionInterval = null;
 let stream;
 
 const MODEL_URL = "./models";
@@ -73,78 +73,92 @@ function startWebcamAndDetection() {
 function onPlay() {
   if (canvas) canvas.remove();
   canvas = faceapi.createCanvasFromMedia(video);
-  // document.body.append(canvas);
 
+  // make sure the canvas never blocks clicks
   canvas.style.position = 'absolute';
   canvas.style.top = '0';
   canvas.style.left = '0';
   canvas.style.pointerEvents = 'none';
 
+  // Prefer appending to the wrapper, so it sits on top of the video only
   wrapper.append(canvas);
+  // document.body.append(canvas); // (fallback)
 
   const displaySize = { width: video.width, height: video.height };
   faceapi.matchDimensions(canvas, displaySize);
 
   detectionInterval = setInterval(async () => {
-    const detections = await faceapi
-      .detectAllFaces(video)
-      .withFaceLandmarks()
-      .withFaceDescriptors();
+    try {
+      const detections = await faceapi
+        .detectAllFaces(video)
+        .withFaceLandmarks()
+        .withFaceDescriptors();
 
-    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+      if (!canvas) return; // user might have stopped scan
 
-    const results = resizedDetections.map((d) =>
-      faceMatcher.findBestMatch(d.descriptor)
-    );
+      const resizedDetections = faceapi.resizeResults(detections, displaySize);
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
-    // draw
-    results.forEach((result, i) => {
-      const box = resizedDetections[i].detection.box;
-      const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() });
-      drawBox.draw(canvas);
-    });
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // stable logic
-    if (results.length > 0) {
-      const best = results[0];
-      const label = best.label;
-      const distance = best.distance;
+      const results = resizedDetections.map(d =>
+        faceMatcher.findBestMatch(d.descriptor)
+      );
 
-      if (label !== "unknown" && distance < PASS_THRESHOLD) {
-        const now = Date.now();
-        const last = lastSuccessByLabel.get(label) || 0;
-        const diff = now - last;
+      // draw
+      results.forEach((result, i) => {
+        const box = resizedDetections[i].detection.box;
+        const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() });
+        drawBox.draw(canvas);
+      });
 
-        if (diff < COOLDOWN_MS) {
-          const remain = ((COOLDOWN_MS - diff) / 1000).toFixed(1);
-          statusEl.textContent = `${label} on cooldown (${remain}s left)…`;
-          resetStable(); // stop counting while on cooldown
-          return;
-        }
+      // ---- stable logic ----
+      if (results.length > 0) {
+        const best = results[0];
+        const label = best.label;
+        const distance = best.distance;
 
-        if (currentStableLabel === label) {
-          if (!stableStart) stableStart = now;
-          const elapsed = (now - stableStart) / 1000;
-          statusEl.textContent = `Detected ${label} for ${elapsed.toFixed(1)}s…`;
-          if (elapsed >= STABLE_SECONDS) {
-            lastSuccessByLabel.set(label, now);
-            markAttendanceSuccess(label);
-            resetStable(); // stop the timer
+        if (label !== "unknown" && distance < PASS_THRESHOLD) {
+          const now = Date.now();
+          const last = lastSuccessByLabel.get(label) || 0;
+          const diff = now - last;
+
+          if (diff < COOLDOWN_MS) {
+            const remain = ((COOLDOWN_MS - diff) / 1000).toFixed(1);
+            statusEl.textContent = `${label} on cooldown (${remain}s left)…`;
+            resetStable();
+            return;
+          }
+
+          if (currentStableLabel === label) {
+            if (!stableStart) stableStart = now;
+            const elapsed = (now - stableStart) / 1000;
+            statusEl.textContent = `Detected ${label} for ${elapsed.toFixed(1)}s…`;
+            if (elapsed >= STABLE_SECONDS) {
+              lastSuccessByLabel.set(label, now);
+              markAttendanceSuccess(label);
+              // await postAttendance(label);  // <- re-enable when your API is ready
+              resetStable();
+            }
+          } else {
+            currentStableLabel = label;
+            stableStart = now;
+            statusEl.textContent = `Detected ${label}… starting timer`;
           }
         } else {
-          currentStableLabel = label;
-          stableStart = now;
-          statusEl.textContent = `Detected ${label}… starting timer`;
+          resetStable("Unknown / low confidence. Waiting…");
         }
       } else {
-        resetStable("Unknown / low confidence. Waiting…");
+        resetStable("No face detected");
       }
-    } else {
-      resetStable("No face detected");
+    } catch (err) {
+      console.error("Detection loop error:", err);
+      statusEl.textContent = "Detection error. See console.";
     }
   }, 100);
 }
+
 
 function stopWebcamAndDetection() {
   if (detectionInterval) {
@@ -175,7 +189,7 @@ function resetStable(msg) {
 
 function markAttendanceSuccess(label) {
   statusEl.textContent = `${label} hadir! (kehadiran tercatat — cooldown 30s)`;
-
+  console.log(`${label} success!`);
   // successImg.classList.remove("d-none");
   successImg.src = "safe.jpg";
   successImg.classList.remove("d-none");
@@ -184,6 +198,21 @@ function markAttendanceSuccess(label) {
   successTimerId = setTimeout(() => {
     successImg.classList.add("d-none");
   }, 3000);
+}
+
+async function postAttendance(label) {
+  const [name, id] = label.split(', '); // Split "Ali, 3323"
+  await fetch('/api/attendance', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      employee_id: id,
+      name: name,
+      label: label,
+      confidence: 0.95, // placeholder
+      scanned_at: new Date().toISOString()
+    })
+  });
 }
 
 async function getLabeledFaceDescriptions() {

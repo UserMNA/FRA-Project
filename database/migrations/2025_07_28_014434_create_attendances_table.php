@@ -7,14 +7,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
 
-    public function up(): void
+    public function up()
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->string('employee_id');
             $table->string('name');
             $table->string('label');
-            $table->float('confidence')->nullable();
+            $table->float('confidence');
             $table->timestamp('scanned_at');
             $table->timestamps();
         });

@@ -10,50 +10,18 @@
 </head>
 <body>
   <div class="d-flex flex-column align-items-center gap-3">
-    <div id="video-wrapper" class="position-relative d-inline-block">
+    <div id="video-wrapper" class="position-relative d-inline-block" style="position: relative;">
       <video id="video" width="640" height="480" autoplay muted playsinline></video>
+      <img id="success-img" src="{{ asset('safe.jpg') }}" class="d-none" alt="Success"
+      style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index: 10;">
     </div>
+    <div id="status" class="mt-2 text-muted">Loading models…</div>
     
     <div class="d-flex gap-2">
       <button id="start-scan" class="btn btn-primary" type="button" disabled>Start Scan</button>
       <button id="stop-scan" class="btn btn-danger" type="button" disabled>Stop Scan</button>
     </div>
-
-    <div id="status" class="mt-2 text-muted">Loading models…</div>
-    <img id="success-img" src="{{ asset('safe.jpg') }}" class="d-none mt-3" width="240" alt="Success">
   </div>
-
-  <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>ID</th>
-                <th>Label</th>
-                <th>Scanned At</th>
-            </tr>
-        </thead>
-        <tbody id="attendance-body"></tbody>
-    </table>
-
-    <script>
-        async function loadAttendance() {
-            const res = await fetch('/api/attendance');
-            const data = await res.json();
-            const tbody = document.getElementById('attendance-body');
-            tbody.innerHTML = '';
-            data.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.employee_id}</td>
-                        <td>${item.label}</td>
-                        <td>${new Date(item.scanned_at).toLocaleString()}</td>
-                    </tr>`;
-            });
-        }
-        loadAttendance();
-        setInterval(loadAttendance, 5000); // Refresh every 5 seconds
-    </script>
 
   <script defer src="{{ asset('face-api.min.js') }}"></script>
   <script defer src="{{ asset('script.js') }}"></script>

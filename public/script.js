@@ -190,12 +190,14 @@ function resetStable(msg) {
 function markAttendanceSuccess(label) {
   statusEl.textContent = `${label} hadir! (kehadiran tercatat — cooldown 30s)`;
   console.log(`${label} success!`);
-  // successImg.classList.remove("d-none");
+
   successImg.src = "safe.jpg";
   successImg.classList.remove("d-none");
-
+  successImg.classList.add("show");
+  
   if (successTimerId) clearTimeout(successTimerId);
   successTimerId = setTimeout(() => {
+    successImg.classList.remove("show");
     successImg.classList.add("d-none");
   }, 3000);
 }

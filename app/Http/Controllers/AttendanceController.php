@@ -4,19 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Attendance;
+use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
     public function index()
     {
-        // Fetch today's attendance
-        $today = Attendance::whereDate('scanned_at', now())->get();
-        return response()->json($today);
+        return Attendance::latest()->get();
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validated = 
+        $request->validate([
             'employee_id' => 'required|string',
             'name' => 'required|string',
             'label' => 'required|string',
@@ -24,8 +24,20 @@ class AttendanceController extends Controller
             'scanned_at' => 'required|date',
         ]);
 
-        $attendance = Attendance::create($data);
+        return Attendance::create($validated);
 
-        return response()->json($attendance, 201);
+        $scannedAt = Carbon::parse($request->input('scanned_at'))->toDateTimeString();
+
+        Attendance::create([
+            'employee_id' => $request->input('employee_id'),
+            'name' => $request->input('name'),
+            'label' => $request->input('label'),
+            'confidence' => $request->input('confidence'),
+            'scanned_at' => $scannedAt,
+        ]);
+
+        return response()->json(['message' => 'Attendance recorded.']);
+
+        // return response()->json(['message' => 'Attendance recorded'], 201);
     }
 }

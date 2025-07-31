@@ -17,11 +17,25 @@ canvas {
     border-radius: 8px;
 }
 
+#video-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 #video-wrapper canvas {
   position: absolute;
   top: 0;
   left: 0;
   pointer-events: none;
+}
+
+#success-img {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+#success-img.show {
+  opacity: 1;
 }
 
 button {

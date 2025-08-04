@@ -9,6 +9,7 @@ class Attendance extends Model
     protected $fillable = [
         'employee_id', 
         'name', 
+        'folder_name',
         'label', 
         'confidence', 
         'scanned_at'

@@ -22,11 +22,17 @@
 
     <script>
         async function loadAttendance() {
-            const res = await fetch('http://localhost:8000/api/attendance');
-            const data = await res.json();
+            const res = await fetch('http://127.0.0.1:8000/api/attendance');
+            if (!res.ok) {
+                const text = await res.text(); 
+                console.error('Fetch failed:', res.status, text);
+                return;
+            }
+            const json = await res.json();
+            const attendanceList = json.data;
             const tbody = document.getElementById('attendance-body');
             tbody.innerHTML = '';
-            data.forEach(item => {
+            attendanceList.forEach(item => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${item.name}</td>
@@ -37,7 +43,7 @@
             });
         }
         loadAttendance();
-        setInterval(loadAttendance, 5000); // Refresh every 5 seconds
+        setInterval(loadAttendance, 5000);
     </script>
 </body>
 </html>

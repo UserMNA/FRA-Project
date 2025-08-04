@@ -55,7 +55,6 @@ function startWebcamAndDetection() {
       stream = mediaStream;
       video.srcObject = stream;
 
-      // ensure we don't stack multiple listeners
       video.removeEventListener("play", onPlay);
       video.addEventListener("play", onPlay);
 
@@ -74,15 +73,12 @@ function onPlay() {
   if (canvas) canvas.remove();
   canvas = faceapi.createCanvasFromMedia(video);
 
-  // make sure the canvas never blocks clicks
   canvas.style.position = 'absolute';
   canvas.style.top = '0';
   canvas.style.left = '0';
   canvas.style.pointerEvents = 'none';
 
-  // Prefer appending to the wrapper, so it sits on top of the video only
   wrapper.append(canvas);
-  // document.body.append(canvas); // (fallback)
 
   const displaySize = { width: video.width, height: video.height };
   faceapi.matchDimensions(canvas, displaySize);
@@ -94,7 +90,7 @@ function onPlay() {
         .withFaceLandmarks()
         .withFaceDescriptors();
 
-      if (!canvas) return; // user might have stopped scan
+      if (!canvas) return;
 
       const resizedDetections = faceapi.resizeResults(detections, displaySize);
       canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
@@ -106,14 +102,12 @@ function onPlay() {
         faceMatcher.findBestMatch(d.descriptor)
       );
 
-      // draw
       results.forEach((result, i) => {
         const box = resizedDetections[i].detection.box;
         const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() });
         drawBox.draw(canvas);
       });
 
-      // ---- stable logic ----
       if (results.length > 0) {
         const best = results[0];
         const label = best.label;
@@ -138,7 +132,6 @@ function onPlay() {
             if (elapsed >= STABLE_SECONDS) {
               lastSuccessByLabel.set(label, now);
               markAttendanceSuccess(label);
-              // await postAttendance(label);  // <- re-enable when your API is ready
               resetStable();
             }
           } else {
@@ -194,7 +187,10 @@ function markAttendanceSuccess(label) {
   successImg.src = "safe.jpg";
   successImg.classList.remove("d-none");
   successImg.classList.add("show");
-  
+
+  const [name, employeeId] = label.split('_');
+  saveAttendance(name, employeeId); // ← Save attendance here
+
   if (successTimerId) clearTimeout(successTimerId);
   successTimerId = setTimeout(() => {
     successImg.classList.remove("show");
@@ -203,7 +199,7 @@ function markAttendanceSuccess(label) {
 }
 
 async function postAttendance(label) {
-  const [name, id] = label.split(', '); // Split "Ali, 3323"
+  const [name, id] = label.split('_'); // Split "ali_9925"
   await fetch('/api/attendance', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -211,32 +207,52 @@ async function postAttendance(label) {
       employee_id: id,
       name: name,
       label: label,
-      confidence: 0.95, // placeholder
+      confidence: 0.95, 
       scanned_at: new Date().toISOString()
     })
   });
 }
 
 async function getLabeledFaceDescriptions() {
-  const labels = ["ali_3323", "aspian_1326", "ikmal_8056", "ikhsan_5196", "daus_4291"];
+  const labels = [
+    "ali_9925", 
+    "aspian_9924", 
+    "daus_9923", 
+    "fadil_9914", 
+    "ikhsan_9911", 
+    "ikmal_9919", 
+    "lutfi_9920"];
   return Promise.all(
     labels.map(async (label) => {
-      const descriptions = [];
-      for (let i = 1; i <= 2; i++) {
-        const img = await faceapi.fetchImage(
-          `${LABELS_BASE}/${encodeURIComponent(label)}/${i}.jpg`
-        );
-        const detections = await faceapi
-          .detectSingleFace(img)
-          .withFaceLandmarks()
-          .withFaceDescriptor();
-        if (!detections) {
-          console.warn(`No face found for ${label}/${i}.jpg`);
-          continue;
-        }
-        descriptions.push(detections.descriptor);
+      const imgUrl = `/labels/${label}.JPG`;
+      const img = await faceapi.fetchImage(imgUrl);
+      const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+      if (!detections) {
+        console.warn(`No face detected in ${label}`);
+        return null;
       }
-      return new faceapi.LabeledFaceDescriptors(label, descriptions);
+      return new faceapi.LabeledFaceDescriptors(label, [detections.descriptor]);
     })
-  );
+  ).then(descriptors => descriptors.filter(d => d !== null));
+};
+
+async function saveAttendance(name, employeeId) {
+  const now = new Date();
+  const payload = {
+    name: name,
+    employee_id: employeeId,
+    label: `${name}_${employeeId}`,
+    confidence: 1,
+    scanned_at: now.toISOString(),
+  };
+
+  fetch('http://127.0.0.1:8000/api/attendance', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => console.log('Attendance submitted:', data))
+  .catch(err => console.error('Error submitting attendance:', err));
 }

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('label');
             $table->float('confidence');
             $table->timestamp('scanned_at');
+            $table->unique(['employee_id', 'scanned_at']);
             $table->timestamps();
         });
     }

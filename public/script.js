@@ -215,13 +215,13 @@ async function postAttendance(label) {
 
 async function getLabeledFaceDescriptions() {
   const labels = [
-    "ali_9925", 
-    "aspian_9924", 
-    "daus_9923", 
-    "fadil_9914", 
-    "ikhsan_9911", 
-    "ikmal_9919", 
-    "lutfi_9920"];
+    "Ali_9925", 
+    "Aspian_9924", 
+    "Pirdaus_9923", 
+    "Fadil_9914", 
+    "Ikhsan_9911", 
+    "Ikmal_9919", 
+    "Lutfi_9920"];
   return Promise.all(
     labels.map(async (label) => {
       const imgUrl = `/labels/${label}.JPG`;

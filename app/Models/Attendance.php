@@ -11,6 +11,7 @@ class Attendance extends Model
         'name', 
         'folder_name',
         'label', 
+        'title', 
         'confidence', 
         'scanned_at'
     ];

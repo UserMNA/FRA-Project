@@ -15,7 +15,8 @@
             <tr>
                 <th>Name</th>
                 <th>ID</th>
-                <th>Label</th>
+                <th>File</th>
+                <th>Title</th>
                 <th>Scanned At</th>
             </tr>
         </thead>
@@ -23,7 +24,7 @@
     </table>
 
     <script>
-        async function loadAttendance() {
+        async function loadAttendance() {   
             const res = await fetch('http://127.0.0.1:8000/api/attendance');
             if (!res.ok) {
                 const text = await res.text(); 
@@ -39,7 +40,8 @@
                     <tr>
                         <td>${item.name}</td>
                         <td>${item.employee_id}</td>
-                        <td>${item.label}</td>
+                        <td>${item.label}.jpg</td>
+                        <td>${item.title ?? 'Employee' }</td>
                         <td>${new Date(item.scanned_at).toLocaleString()}</td>
                     </tr>`;
             });

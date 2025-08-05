@@ -33,6 +33,7 @@ class AttendanceController extends Controller
             'employee_id' => 'required|string',
             'name' => 'required|string',
             'label' => 'required|string',
+            'title' => 'nullable|string',
             'confidence' => 'nullable|numeric',
             'scanned_at' => 'required|string',
         ]);
@@ -41,11 +42,21 @@ class AttendanceController extends Controller
 
         $validated['label'] = strtolower($validated['name']) . '_' . $validated['employee_id'];
 
+        $predefinedTitles = [
+            '9914' => 'Leader',
+            '9923' => 'Vice-Leader',
+            '9920' => 'Security',
+            '9925' => 'Admin',
+            '9911' => 'Manager',
+        ];
+        
+        $validated['title'] = $predefinedTitles[$validated['employee_id']] ?? 'Employee';
+
         $today = Carbon::now()->toDateString();
 
         $existing = Attendance::where('employee_id', $validated['employee_id'])
             ->whereDate('scanned_at', $today)
-            ->first();
+            ->first();  
 
         if ($existing) {
             $existing->update($validated);

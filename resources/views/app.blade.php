@@ -7,12 +7,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
         <div class="container">
-            <a class="navbar-brand" href="/">Attendance App</a>
+            <a class="navbar-brand text-primary fw-bold" href="/">Attendance App</a>
             <div>
-                <a class="nav-link d-inline" href="/register-employee">Register Employee</a>
-                <a class="nav-link d-inline" href="/attendance">Attendance</a>
+                <a class="btn btn-primary" href="/face">Scan Face   </a>
+                <a class="btn btn-secondary" href="/register-employee">Register Employee</a>
+                <a class="btn btn-success" href="/attendance-view">Attendance</a>
             </div>
         </div>
     </nav>

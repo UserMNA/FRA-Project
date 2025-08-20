@@ -20,6 +20,7 @@
     <div class="d-flex gap-2">
       <button id="start-scan" class="btn btn-primary" type="button" disabled>Start Scan</button>
       <button id="stop-scan" class="btn btn-danger" type="button" disabled>Stop Scan</button>
+      <a href="{{ url('/attendance-view') }}" class="btn btn-success" id="see-at">See Attendance Table</a>
     </div>
   </div>
 

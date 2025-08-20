@@ -15,6 +15,7 @@ canvas {
 #video {
     border: 1px solid #ccc;
     border-radius: 8px;
+    transform: scaleX(-1);
 }
 
 #video-wrapper {
@@ -27,6 +28,7 @@ canvas {
   top: 0;
   left: 0;
   pointer-events: none;
+  transform: scaleX(-1);
 }
 
 #success-img {

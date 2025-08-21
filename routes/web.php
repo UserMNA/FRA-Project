@@ -15,3 +15,5 @@ Route::get('/attendance-pdf', [AttendanceController::class, 'downloadPDF'])->nam
 Route::get('/attendance-view', [AttendanceController::class, 'showView']);
 Route::get('/register-employee', [EmployeeController::class, 'showRegistrationForm']);
 Route::post('/register-employee', [EmployeeController::class, 'register']);
+Route::get('/employees', [EmployeeController::class, 'showEmployeeList'])->name('employees.list');
+Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');

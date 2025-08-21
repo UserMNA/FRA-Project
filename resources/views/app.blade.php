@@ -11,9 +11,10 @@
         <div class="container">
             <a class="navbar-brand text-primary fw-bold" href="/">Attendance App</a>
             <div>
-                <a class="btn btn-primary" href="/face">Scan Face   </a>
-                <a class="btn btn-secondary" href="/register-employee">Register Employee</a>
-                <a class="btn btn-success" href="/attendance-view">Attendance</a>
+                <a class="btn btn-primary me-2" href="/face">Scan Face</a>
+                <a class="btn btn-outline-primary me-2" href="/register-employee">Register Employee</a>
+                <a class="btn btn-success me-2" href="/attendance-view">Attendance</a>
+                <a class="btn btn-outline-success" href="/employees">Employees List</a>
             </div>
         </div>
     </nav>

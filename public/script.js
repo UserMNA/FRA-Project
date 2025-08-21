@@ -174,7 +174,7 @@ async function getLabeledFaceDescriptions() {
     ];
     const descriptors = await Promise.all(
         labels.map(async (label) => {
-            const img = await faceapi.fetchImage(`/labels/${label}.JPG`);
+            const img = await faceapi.fetchImage(`/storage/labels/${label}.JPG`);
             const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
             return detections ? new faceapi.LabeledFaceDescriptors(label, [detections.descriptor]) : null;
         })

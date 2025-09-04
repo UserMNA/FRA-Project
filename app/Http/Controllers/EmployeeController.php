@@ -18,32 +18,35 @@ class EmployeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'employee_id' => 'required|string|unique:employees|max:50',
-            'image' => 'required|image|mimes:jpeg,jpg,png|max:2048', // 2MB max
+            'image' => 'required|image|mimes:jpeg,jpg,png|max:2048',
         ]);
-
-        // if ($request->hasFile('image')) {
-        //     dd('File is present in the request!'); 
-        // } else {
-        //     dd('File is NOT present in the request!');
-        // }
-
+        
         $label = "{$request->name}_{$request->employee_id}";
-        $filename = "{$label}.JPG";
-        $path = $request->file('image')->storeAs('public/labels', $filename);
+        $filename = "{$label}.jpg";
 
+        // Get the uploaded file object
+        $uploadedFile = $request->file('image');
+        
+        // Get the content of the uploaded file
+        $fileContent = file_get_contents($uploadedFile->getRealPath());
+
+        // Manually save the file content to the public disk
+        // This is more reliable for handling permissions on some setups
+        Storage::disk('public')->put("labels/{$filename}", $fileContent);
+
+        // Save to the database
         Employee::create([
             'name' => $request->name,
             'employee_id' => $request->employee_id,
-            'image_path' => 'labels/' . $filename,
+            'image_path' => $filename,
         ]);
 
         return redirect()->back()->with('success', 'Employee registered successfully!');
-    }
+    }    
 
     public function showEmployeeList()
     {
         $employees = Employee::all();
-        
         return view('employee-list', compact('employees'));
     }
 

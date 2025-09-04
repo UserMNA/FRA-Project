@@ -19,7 +19,8 @@
                                 <th>Name</th>
                                 <th>Employee ID</th>
                                 <th>Photo</th>
-                                <th>Actions</th> </tr>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody>
                             @foreach ($employees as $employee)

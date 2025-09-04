@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Employee extends Model
 {
-    // use HasFactory;
+    use HasFactory;
 
-    // protected $fillable = [
-    //     'name',
-    //     'employee_id',
-    //     'image_path',
-    // ];
+    protected $fillable = [
+        'name',
+        'employee_id',
+        'image_path',
+    ];
 }
+    

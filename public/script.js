@@ -168,18 +168,31 @@ function markAttendanceSuccess(label) {
 }
 
 async function getLabeledFaceDescriptions() {
-    const labels = [
-        "Ali_9925", "Aspian_9924", "Pirdaus_9923", "Fadil_9914",
-        "Ikhsan_9911", "Ikmal_9919", "Lutfi_9920"
-    ];
+    // Fetch the list of employees from your API endpoint
+    const response = await fetch('/api/employees');
+    if (!response.ok) {
+        throw new Error(`Failed to fetch employees: ${response.status} ${response.statusText}`);
+    }
+    const employees = await response.json();
+
     const descriptors = await Promise.all(
-        labels.map(async (label) => {
-            const img = await faceapi.fetchImage(`/storage/labels/${label}.JPG`);
+        employees.map(async (employee) => {
+            const label = `${employee.name}_${employee.employee_id}`;
+            const img = await faceapi.fetchImage(`/storage/labels/${employee.image_path}`);
+            
             const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-            return detections ? new faceapi.LabeledFaceDescriptors(label, [detections.descriptor]) : null;
+
+            if (!detections) {
+                console.warn(`No face detected for employee: ${label}`);
+                return null;
+            }
+
+            return new faceapi.LabeledFaceDescriptors(label, [detections.descriptor]);
         })
     );
-    return descriptors.filter(Boolean); // Filter out null values
+    
+    // Filter out any employees for whom a face was not detected
+    return descriptors.filter(Boolean);
 }
 
 async function saveAttendance(name, employeeId) {

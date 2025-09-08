@@ -42,7 +42,13 @@ class EmployeeController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Employee registered successfully!');
-    }    
+    }
+
+    public function getEmployeesApi()
+    {
+        $employees = Employee::select('name', 'employee_id', 'image_path')->get();
+        return response()->json($employees);
+    }
 
     public function showEmployeeList()
     {

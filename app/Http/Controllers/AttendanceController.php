@@ -28,6 +28,12 @@ class AttendanceController extends Controller
         return $pdf->download('attendance_report.pdf');
     }
     
+    public function clearAttendance()
+    {
+        Attendance::truncate();
+        return redirect()->back()->with('success', 'All attendance records have been cleared.');
+    }
+
     public function store(Request $request){
         $validated = $request->validate([
             'employee_id' => 'required|string',
@@ -41,16 +47,6 @@ class AttendanceController extends Controller
         $validated['scanned_at'] = Carbon::parse($validated['scanned_at'])->format('Y-m-d H:i:s');
 
         $validated['label'] = strtolower($validated['name']) . '_' . $validated['employee_id'];
-
-        $predefinedTitles = [
-            '9914' => 'Leader',
-            '9923' => 'Vice-Leader',
-            '9920' => 'Security',
-            '9925' => 'Admin',
-            '9911' => 'Manager',
-        ];
-        
-        $validated['title'] = $predefinedTitles[$validated['employee_id']] ?? 'Employee';
 
         $today = Carbon::now()->toDateString();
 

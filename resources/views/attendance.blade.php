@@ -10,6 +10,11 @@
     <h1 class="mb-2">Attendance Records</h1>
     <a href="{{ route('attendance.download') }}" class="btn btn-success mb-2">📥 Download Excel</a>
     <a href="{{ route('attendance.pdf') }}" class="btn btn-danger mb-2">🖨️ Download PDF</a>
+    <form action="{{ route('attendance.clear') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all attendance records? This action cannot be undone.');" class="d-inline">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-warning mb-2">🔄 Clear All Records</button>
+    </form>
     <table class="table table-bordered">
         <thead>
             <tr>

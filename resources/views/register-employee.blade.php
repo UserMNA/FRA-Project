@@ -25,6 +25,18 @@
                                 <input type="text" class="form-control" id="employee_id" name="employee_id" required disabled>
                             </div>
                             <div class="mb-3">
+                                <label for="title" class="form-label">Position</label>
+                                <select class="form-select" id="title" name="title" required>
+                                    <option value="" selected disabled>Select a position</option>
+                                    <option value="Leader">Leader</option>
+                                    <option value="Vice-Leader">Vice-Leader</option>
+                                    <option value="Security">Security</option>
+                                    <option value="Admin">Cleaning Service</option>
+                                    <option value="Manager">Secretary</option>
+                                    <option value="Employee">Employee</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
                                 <label for="image" class="form-label">Employee Photo (Format: name_id.JPG)</label>
                                 <input type="file" class="form-control" id="image" name="image" required>
                             </div>

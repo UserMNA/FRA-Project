@@ -13,6 +13,7 @@ class Employee extends Model
         'name',
         'employee_id',
         'image_path',
+        'title',
     ];
 }
     

@@ -9,3 +9,4 @@ Route::get('/attendance', [AttendanceController::class, 'index']);
 Route::get('/attendance/today', [AttendanceController::class, 'today']);
 Route::get('/employees', [EmployeeController::class, 'getEmployeesApi']);
 Route::get('/employees/labels', [EmployeeController::class, 'getLabels']);
+Route::get('/attendance', [AttendanceController::class, 'getAttendanceApi']);

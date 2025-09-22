@@ -11,6 +11,35 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class AttendanceController extends Controller
 {
+    public function getAttendanceApi(Request $request)
+    {
+        // Start a new query on the Attendance model
+        $query = Attendance::query();
+
+        // Filter by name
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->input('name') . '%');
+        }
+
+        // Filter by employee ID
+        if ($request->filled('employee_id')) {
+            $query->where('employee_id', $request->input('employee_id'));
+        }
+
+        // Filter by date
+        if ($request->filled('date')) {
+            $date = Carbon::parse($request->input('date'))->toDateString();
+            $query->whereDate('scanned_at', $date);
+        }
+
+        // Order the results and get the data
+        $attendance = $query->orderBy('scanned_at')->get();
+
+        return response()->json([
+            'data' => $attendance,
+        ]);
+    }
+
     public function showView() {
         $attendances = \App\Models\Attendance::latest()->get();
         return view('attendance', compact('attendances'));

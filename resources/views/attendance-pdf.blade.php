@@ -37,6 +37,7 @@
                         <td>{{ $attendance->name }}</td>
                         <td>{{ $attendance->employee_id }}</td>
                         <td>{{ $attendance->label }}</td>
+                        <td>${item.title ?? 'Employee'}</td>
                         <td>{{ \Carbon\Carbon::parse($attendance->scanned_at)->format('m/d/Y, h:i A') }}</td>
                     </tr>
                 @endforeach

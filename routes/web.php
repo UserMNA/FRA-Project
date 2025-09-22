@@ -18,3 +18,5 @@ Route::post('/register-employee', [EmployeeController::class, 'register']);
 Route::get('/employees', [EmployeeController::class, 'showEmployeeList'])->name('employees.list');
 Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
 Route::delete('/attendance/clear', [AttendanceController::class, 'clearAttendance'])->name('attendance.clear');
+Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
+Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');

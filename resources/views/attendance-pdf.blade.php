@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Attendance Report</title>
+        <title>Catatan Absen</title>
         <style>
             body { font-family: sans-serif; font-size: 14px; }
             table {
@@ -11,12 +11,12 @@
                 margin-top: 20px;
             }
             th, td {
-                border: 1px solid #333;
+                border: 1px solid black;
                 padding: 8px;
                 text-align: left;
             }
             th {
-                background: #eee;
+                background: white;
             }
         </style>
     </head>
@@ -25,10 +25,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Nama</th>
                     <th>ID</th>
-                    <th>Label</th>
-                    <th>Scanned At</th>
+                    <th>Posisi</th>
+                    <th>Waktu</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,7 +37,6 @@
                         <td>{{ $attendance->name }}</td>
                         <td>{{ $attendance->employee_id }}</td>
                         <td>{{ $attendance->label }}</td>
-                        <td>${item.title ?? 'Employee'}</td>
                         <td>{{ \Carbon\Carbon::parse($attendance->scanned_at)->format('m/d/Y, h:i A') }}</td>
                     </tr>
                 @endforeach

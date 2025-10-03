@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catatan Absen</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="p-4">
     <h1 class="mb-2">Catatan Absen</h1>
@@ -51,6 +52,28 @@
             event.preventDefault();
             loadAttendance();
         });
+
+        async function clearRecordsByDate(dateString) {
+            const confirmDelete = confirm(`Are you sure you want to clear all records for ${dateString}? This action cannot be undone.`);
+            
+            if (confirmDelete) {
+                // Send a DELETE request to your new route
+                const response = await fetch(`/attendance/clear/${dateString}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    alert(`Records for ${dateString} cleared successfully.`);
+                    loadAttendance(); // Reload the table
+                } else {
+                    alert('Failed to clear records.');
+                }
+            }
+        }
         
         async function loadAttendance() {
             const name = document.getElementById('filter-name').value;
@@ -81,13 +104,28 @@
 
             attendanceList.forEach(item => {
                 const scannedDate = new Date(item.scanned_at);
-                const currentDateString = scannedDate.toLocaleDateString();
+                
+                const dateFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Makassar' };
+                const currentDateString = new Intl.DateTimeFormat('id-ID', dateFormatOptions).format(scannedDate);
+                
+                const timeFormatOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Makassar' };
+                const currentTimeString = new Intl.DateTimeFormat('id-ID', timeFormatOptions).format(scannedDate);
+
 
                 if (currentDateString !== lastDate) {
+                    // Format the date for use in a URL (YYYY-MM-DD)
+                    const urlDate = scannedDate.toISOString().split('T')[0]; 
+                    
+                    // Insert the separator row with the buttons
                     tbody.innerHTML += `
-                        <tr>
-                            <td colspan="5" class="bg-primary text-white text-center fw-bold">
-                                ${currentDateString}
+                        <tr class="table-info">
+                            <td colspan="5" class="d-flex justify-content-between align-items-center fw-bold">
+                                <span>📅 ${currentDateString}</span>
+                                <div>
+                                    <a href="/attendance/download/${urlDate}" class="btn btn-success btn-sm me-2">📥 Download Excel</a>
+                                    <a href="/attendance/pdf/${urlDate}" class="btn btn-danger btn-sm me-2">🖨️ Download PDF</a>
+                                    <button onclick="clearRecordsByDate('${urlDate}')" class="btn btn-warning btn-sm">🔄 Clear Day</button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -100,7 +138,7 @@
                         <td>${item.employee_id}</td>
                         <td>${item.label}.jpg</td>
                         <td>${item.title ?? 'Employee'}</td>
-                        <td>${scannedDate.toLocaleTimeString()}</td>
+                        <td>${currentTimeString}</td>
                     </tr>`;
             });
         }

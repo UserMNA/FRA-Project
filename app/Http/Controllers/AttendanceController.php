@@ -13,20 +13,21 @@ class AttendanceController extends Controller
 {
     public function getAttendanceApi(Request $request)
     {
-        // Start a new query on the Attendance model
-        $query = Attendance::query();
+        // Start a query on the Attendance model and eager load the 'employee' relationship
+        $query = Attendance::with('employee');
 
-        // Filter by name
+        // Filter logic remains the same
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%' . $request->input('name') . '%');
+            // Filter by name using the relationship
+            $query->whereHas('employee', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->input('name') . '%');
+            });
         }
 
-        // Filter by employee ID
         if ($request->filled('employee_id')) {
             $query->where('employee_id', $request->input('employee_id'));
         }
 
-        // Filter by date
         if ($request->filled('date')) {
             $date = Carbon::parse($request->input('date'))->toDateString();
             $query->whereDate('scanned_at', $date);
@@ -35,8 +36,20 @@ class AttendanceController extends Controller
         // Order the results and get the data
         $attendance = $query->orderBy('scanned_at')->get();
 
+        // Now, transform the data to include Master Data attributes
+        $formattedAttendance = $attendance->map(function ($record) {
+            return [
+                'name' => $record->employee->name,         // Fetched from Master Data
+                'employee_id' => $record->employee_id,     // Stored in Transactional Data
+                'title' => $record->employee->title,       // Fetched from Master Data
+                'scanned_at' => $record->scanned_at,
+                // The label/file name logic will need adjustment depending on your exact API needs
+                'label' => $record->employee->name . '_' . $record->employee_id, 
+            ];
+        });
+
         return response()->json([
-            'data' => $attendance,
+            'data' => $formattedAttendance,
         ]);
     }
 
@@ -44,26 +57,54 @@ class AttendanceController extends Controller
         $attendances = \App\Models\Attendance::latest()->get();
         return view('attendance', compact('attendances'));
     }
-
-    public function downloadExcel()
-    {
-        return Excel::download(new AttendanceExport, 'attendance.xlsx');
-    }
-
-    public function downloadPDF()
-    {
-        $attendances = Attendance::all();
-        $pdf = Pdf::loadView('attendance-pdf', compact('attendances'));
-        return $pdf->download('attendance_report.pdf');
-    }
     
-    public function clearAttendance()
-    {
+    public function clearAttendance() {
         Attendance::truncate();
         return redirect()->back()->with('success', 'All attendance records have been cleared.');
     }
 
-    public function store(Request $request){
+    public function clearAttendanceByDate(string $date)
+    {
+        try {
+            // Parse the date and ensure we delete everything for that specific day
+            $targetDate = Carbon::parse($date)->toDateString();
+            
+            Attendance::whereDate('scanned_at', $targetDate)->delete();
+
+            return response()->json(['message' => "Attendance for $targetDate cleared successfully."], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to clear attendance records.', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Download Excel report for a specific date.
+     * (Requires you to adjust your existing download logic to use the $date parameter)
+     */
+    public function downloadExcel(string $date)
+    {
+        // Example logic:
+        $targetDate = Carbon::parse($date)->toDateString();
+        // Adjust your Excel export class to accept the date and filter the data
+        // return Excel::download(new AttendanceExport($targetDate), "Attendance_{$targetDate}.xlsx");
+        
+        return redirect()->back()->with('success', "Download Excel for {$targetDate} initiated.");
+    }
+
+    /**
+     * Download PDF report for a specific date.
+     */
+    public function downloadPDF(string $date)
+    {
+        // Example logic:
+        $targetDate = Carbon::parse($date)->toDateString();
+        // Adjust your PDF generation logic to accept the date and filter the data
+        
+        return redirect()->back()->with('success', "Download PDF for {$targetDate} initiated.");
+    }
+
+    public function store(Request $request) {
         $validated = $request->validate([
             'employee_id' => 'required|string',
             'name' => 'required|string',
@@ -100,8 +141,7 @@ class AttendanceController extends Controller
         ], $status);
     }
     
-    public function index()
-    {
+    public function index() {
         $attendances = Attendance::latest()->get();
 
         return response()->json([

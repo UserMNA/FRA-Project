@@ -20,3 +20,6 @@ Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('
 Route::delete('/attendance/clear', [AttendanceController::class, 'clearAttendance'])->name('attendance.clear');
 Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit');
 Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update');
+Route::get('/attendance/download/{date}', [AttendanceController::class, 'downloadExcel'])->name('attendance.download.date');
+Route::get('/attendance/pdf/{date}', [AttendanceController::class, 'downloadPDF'])->name('attendance.pdf.date');
+Route::delete('/attendance/clear/{date}', [AttendanceController::class, 'clearAttendanceByDate']);

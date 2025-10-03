@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Register</title>
 </head>
 <body>
     @extends('app')
@@ -12,35 +12,31 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">Register New Employee</div>
+                    <div class="card-header">Registrasikan Pekerja Baru</div>
                     <div class="card-body">
                         <form action="/register-employee" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="mb-3">
-                                <label for="name" class="form-label">Employee Name</label>
+                                <label for="name" class="form-label">Nama Pekerja</label>
                                 <input type="text" class="form-control" id="name" name="name" required disabled>
                             </div>
                             <div class="mb-3">
-                                <label for="employee_id" class="form-label">Employee ID</label>
+                                <label for="employee_id" class="form-label">ID Pekerja</label>
                                 <input type="text" class="form-control" id="employee_id" name="employee_id" required disabled>
                             </div>
                             <div class="mb-3">
-                                <label for="title" class="form-label">Position</label>
+                                <label for="title" class="form-label">Posisi</label>
                                 <select class="form-select" id="title" name="title" required>
-                                    <option value="" selected disabled>Select a position</option>
-                                    <option value="Leader">Leader</option>
-                                    <option value="Vice-Leader">Vice-Leader</option>
-                                    <option value="Security">Security</option>
-                                    <option value="Admin">Cleaning Service</option>
-                                    <option value="Manager">Secretary</option>
-                                    <option value="Employee">Employee</option>
+                                    <option value="" selected disabled>Pilih Posisi</option>
+                                    <option value="Leader">Pemimpin</option>
+                                    <option value="Vice-Leader">Wakil</option>
+                                    <option value="Security">Sekuriti</option>
+                                    <option value="Admin">Atmin</option>
+                                    <option value="Secretary">Sekretaris</option>
+                                    <option value="Employee">Pekerja</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="image" class="form-label">Employee Photo (Format: name_id.JPG)</label>
-                                <input type="file" class="form-control" id="image" name="image" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Register Employee</button>
+                            <button type="submit" class="btn btn-primary">Register Pekerja</button>
                         </form>
                     </div>
                 </div>

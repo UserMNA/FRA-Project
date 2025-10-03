@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Face Recognition</title>
+  <title>Scan Wajah</title>
 
   <link rel="stylesheet" href="{{ asset('style.css') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,12 +15,12 @@
       <img id="success-img" src="{{ asset('safe.jpg') }}" class="d-none" alt="Success"
       style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index: 10;">
     </div>
-    <div id="status" class="mt-2 text-muted">Loading models…</div>
+    <div id="status" class="mt-2 text-muted">Loading model…</div>
     
     <div class="d-flex gap-2">
-      <button id="start-scan" class="btn btn-primary" type="button" disabled>Start Scan</button>
+      <button id="start-scan" class="btn btn-primary" type="button" disabled>Mulai Scan</button>
       <button id="stop-scan" class="btn btn-danger" type="button" disabled>Stop Scan</button>
-      <a href="{{ url('/attendance-view') }}" class="btn btn-success" id="see-at">See Attendance Table</a>
+      <a href="{{ url('/attendance-view') }}" class="btn btn-success" id="see-at">Lihat Table Absen</a>
     </div>
   </div>
 

@@ -15,4 +15,10 @@ class Attendance extends Model
         'confidence', 
         'scanned_at'
     ];
+
+    public function employee()
+    {
+        // Link this model's 'employee_id' column to the 'employee_id' column on the Employee model
+        return $this->belongsTo(Employee::class, 'employee_id', 'employee_id');
+    }
 }

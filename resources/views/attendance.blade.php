@@ -27,27 +27,19 @@
         </div>
     </form>
     
-    <a href="{{ route('attendance.download') }}" class="btn btn-success mb-2">📥 Download Excel</a>
+    <!-- <a href="{{ route('attendance.download') }}" class="btn btn-success mb-2">📥 Download Excel</a>
     <a href="{{ route('attendance.pdf') }}" class="btn btn-danger mb-2">🖨️ Download PDF</a>
     <form action="{{ route('attendance.clear') }}" method="POST" onsubmit="return confirm('Are you sure you want to clear all attendance records? This action cannot be undone.');" class="d-inline">
         @csrf
         @method('DELETE')
         <button type="submit" class="btn btn-warning mb-2">🔄 Clear All Records</button>
-    </form>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Nama</th>
-                <th>ID</th>
-                <th>File</th>
-                <th>Posisi</th>
-                <th>Di Scan saat</th>
-            </tr>
-        </thead>
-        <tbody id="attendance-body"></tbody>
-    </table>
+    </form> -->
+    <div id="attendance-container">
+    </div>
 
     <script>
+        let attendanceIntervalId;
+        
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault();
             loadAttendance();
@@ -57,7 +49,6 @@
             const confirmDelete = confirm(`Are you sure you want to clear all records for ${dateString}? This action cannot be undone.`);
             
             if (confirmDelete) {
-                // Send a DELETE request to your new route
                 const response = await fetch(`/attendance/clear/${dateString}`, {
                     method: 'DELETE',
                     headers: {
@@ -68,10 +59,13 @@
                 
                 if (response.ok) {
                     alert(`Records for ${dateString} cleared successfully.`);
-                    loadAttendance(); // Reload the table
+                    loadAttendance(); 
                 } else {
                     alert('Failed to clear records.');
+                    const errorText = await response.text();
+                    console.error('Clear Records Error:', response.status, errorText);
                 }
+                attendanceIntervalId = setInterval(loadAttendance, 5000);
             }
         }
         
@@ -80,7 +74,6 @@
             const id = document.getElementById('filter-id').value;
             const date = document.getElementById('filter-date').value;
 
-            // Build the query string
             const params = new URLSearchParams();
             if (name) params.append('name', name);
             if (id) params.append('employee_id', id);
@@ -97,10 +90,14 @@
             }
             const json = await res.json();
             const attendanceList = json.data;
-            const tbody = document.getElementById('attendance-body');
-            tbody.innerHTML = '';
+            
+            const container = document.getElementById('attendance-container');
+            container.innerHTML = ''; 
 
             let lastDate = null;
+            let htmlContent = ''; 
+
+            attendanceList.sort((a, b) => new Date(a.scanned_at) - new Date(b.scanned_at));
 
             attendanceList.forEach(item => {
                 const scannedDate = new Date(item.scanned_at);
@@ -111,37 +108,70 @@
                 const timeFormatOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Makassar' };
                 const currentTimeString = new Intl.DateTimeFormat('id-ID', timeFormatOptions).format(scannedDate);
 
-
                 if (currentDateString !== lastDate) {
-                    // Format the date for use in a URL (YYYY-MM-DD)
-                    const urlDate = scannedDate.toISOString().split('T')[0]; 
                     
-                    // Insert the separator row with the buttons
-                    tbody.innerHTML += `
-                        <tr class="table-info">
-                            <td colspan="5" class="d-flex justify-content-between align-items-center fw-bold">
-                                <span>📅 ${currentDateString}</span>
-                                <div>
-                                    <a href="/attendance/download/${urlDate}" class="btn btn-success btn-sm me-2">📥 Download Excel</a>
-                                    <a href="/attendance/pdf/${urlDate}" class="btn btn-danger btn-sm me-2">🖨️ Download PDF</a>
-                                    <button onclick="clearRecordsByDate('${urlDate}')" class="btn btn-warning btn-sm">🔄 Clear Day</button>
-                                </div>
-                            </td>
-                        </tr>
+                    if (lastDate !== null) {
+                        htmlContent += `</tbody></table>`;
+                    }
+
+                    const urlDate = scannedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+                    
+                    htmlContent += `
+                        <div class="d-flex justify-content-between align-items-center bg-secondary text-white p-2 mt-4 mb-2 rounded">
+                            <h4 class="m-0">📅 Catatan Absen: ${currentDateString}</h4>
+                            <div>
+                                <a href="/attendance/download/${urlDate}" class="btn btn-success btn-sm me-2">📥 Download Excel</a>
+                                <a href="/attendance/pdf/${urlDate}" class="btn btn-danger btn-sm me-2">🖨️ Download PDF</a>
+                            </div>
+                        </div>
                     `;
+                    
+                    // 3. Start the new table structure with its header
+                    htmlContent += `
+                        <table class="table table-bordered mb-5">
+                            <thead>
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>ID</th>
+                                    <th>Posisi</th>
+                                    <th>Di Scan saat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
                     lastDate = currentDateString;
                 }
 
-                tbody.innerHTML += `
+                // 4. Add the row to the current day's table body
+                htmlContent += `
                     <tr>
                         <td>${item.name}</td>
                         <td>${item.employee_id}</td>
-                        <td>${item.label}.jpg</td>
                         <td>${item.title ?? 'Employee'}</td>
                         <td>${currentTimeString}</td>
                     </tr>`;
             });
+
+            // 5. After the loop, close the final table if data exists
+            if (attendanceList.length > 0) {
+                htmlContent += `</tbody></table>`;
+            }
+
+            // 6. Inject all generated content into the container once
+            container.innerHTML = htmlContent;
         }
+        
+        document.getElementById('attendance-container').addEventListener('click', function(event) {
+            const target = event.target.closest('.clear-day-btn');
+
+            if (target) {
+                event.preventDefault();
+                const dateString = target.getAttribute('data-date');
+                clearRecordsByDate(dateString);
+            }
+        });
+
         loadAttendance();
         setInterval(loadAttendance, 5000);
     </script>

@@ -32,12 +32,14 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($attendances as $attendance)
-                    <tr>
-                        <td>{{ $attendance->name }}</td>
+                @foreach ($attendanceData as $attendance) <tr>
+                        <td>{{ $attendance->employee->name ?? 'Karyawan Dihapus' }}</td>
+                        
                         <td>{{ $attendance->employee_id }}</td>
-                        <td>{{ $attendance->label }}</td>
-                        <td>{{ \Carbon\Carbon::parse($attendance->scanned_at)->format('m/d/Y, h:i A') }}</td>
+                        
+                        <td>{{ $attendance->employee->title ?? 'N/A' }}</td>
+                        
+                        <td>{{ \Carbon\Carbon::parse($attendance->scanned_at)->format('m/d/Y, H:i:s') }}</td>
                     </tr>
                 @endforeach
             </tbody>

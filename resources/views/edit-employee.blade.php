@@ -28,12 +28,12 @@
                             <div class="mb-3">
                                 <label for="title" class="form-label">Position</label>
                                 <select class="form-select" id="title" name="title" required>
-                                    <option value="Leader" {{ old('title', $employee->title) == 'Leader' ? 'selected' : '' }}>Pemimpin</option>
-                                    <option value="Vice-Leader" {{ old('title', $employee->title) == 'Vice-Leader' ? 'selected' : '' }}>Wakil</option>
-                                    <option value="Security" {{ old('title', $employee->title) == 'Security' ? 'selected' : '' }}>Sekuriti</option>
-                                    <option value="Admin" {{ old('title', $employee->title) == 'Admin' ? 'selected' : '' }}>Atmin</option>
-                                    <option value="Manager" {{ old('title', $employee->title) == 'Secretary' ? 'selected' : '' }}>Sekretaris</option>
-                                    <option value="Employee" {{ old('title', $employee->title) == 'Employee' ? 'selected' : '' }}>Pekerja</option>
+                                    <option value="Pemimpin" {{ old('title', $employee->title) == 'Pemimpin' ? 'selected' : '' }}>Pemimpin</option>
+                                    <option value="Wakil" {{ old('title', $employee->title) == 'Wakil' ? 'selected' : '' }}>Wakil</option>
+                                    <option value="Sekuriti" {{ old('title', $employee->title) == 'Sekuriti' ? 'selected' : '' }}>Sekuriti</option>
+                                    <option value="Atmin" {{ old('title', $employee->title) == 'Atmin' ? 'selected' : '' }}>Atmin</option>
+                                    <option value="Sekretaris" {{ old('title', $employee->title) == 'Sekretaris' ? 'selected' : '' }}>Sekretaris</option>
+                                    <option value="Pekerja" {{ old('title', $employee->title) == 'Pekerja' ? 'selected' : '' }}>Pekerja</option>
                                 </select>
                             </div>
                             <div class="mb-3">

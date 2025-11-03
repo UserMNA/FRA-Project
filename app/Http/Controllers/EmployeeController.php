@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Employee;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 
 class EmployeeController extends Controller
 {
     public function showRegistrationForm()
     {
-        return view('register-employee');
+        return view('register-employee'); 
     }
 
     public function register(Request $request)
@@ -21,20 +24,17 @@ class EmployeeController extends Controller
             'title' => 'required|string|max:30',
             'image' => 'required|image|mimes:jpeg,jpg,png|max:2048',
         ]);
-        
-        $label = "{$request->name}_{$request->employee_id}";
-        $filename = "{$label}.jpg";
+                
+        $filename = "{$request->name}_{$request->employee_id}.jpg";
 
-        $uploadedFile = $request->file('image');
-        
-        $fileContent = file_get_contents($uploadedFile->getRealPath());
-
-        Storage::disk('public')->put("labels/{$filename}", $fileContent);
+        if ($request->hasFile('image')) {
+            $request->file('image')->storeAs('labels', $filename, 'public');
+        }
 
         Employee::create([
             'name' => $request->name,
             'employee_id' => $request->employee_id,
-            'title' =>  $request->title,
+            'title' => $request->title,
             'image_path' => $filename,
         ]);
 
@@ -61,15 +61,19 @@ class EmployeeController extends Controller
 
         $employees = $query->get();
 
-        return view('employee-list', compact('employees'));
+        return view('employee-list', compact('employees')); 
     }
-
+    
     public function destroy(string $id)
     {
         $employee = Employee::findOrFail($id); 
         
-        Storage::disk('public')->delete('labels/' . $employee->image_path);
+        $filePath = 'labels/' . $employee->image_path;
 
+        if (Storage::disk('public')->exists($filePath)) {
+            Storage::disk('public')->delete($filePath);
+        }
+        
         $employee->delete(); 
 
         return redirect()->back()->with('success', 'Employee deleted successfully!');
@@ -89,34 +93,47 @@ class EmployeeController extends Controller
             'image' => 'nullable|image|mimes:jpeg,jpg,png|max:2048',
         ]);
 
-        $employee->name = $request->name;
-        $employee->employee_id = $request->employee_id;
-        $employee->title = $request->title;
+        $originalEmployeeId = $employee->employee_id;
+        $hasEmployeeIdChanged = $request->employee_id !== $originalEmployeeId;
 
-        // Handle image update
-        if ($request->hasFile('image')) {
-            // Delete old file
-            Storage::disk('public')->delete('labels/' . $employee->image_path);
+        DB::beginTransaction();
+
+        try {
+            $employee->name = $request->name;
+            $employee->employee_id = $request->employee_id;
+            $employee->title = $request->title;
+
+            $newFilename = "{$request->name}_{$request->employee_id}.jpg";
+
+            if ($request->hasFile('image')) {
+                Storage::disk('public')->delete('labels/' . $employee->image_path);
             
-            // Generate new filename
-            $newFilename = "{$request->name}_{$request->employee_id}.jpg";
-            $uploadedFile = $request->file('image');
-            $fileContent = file_get_contents($uploadedFile->getRealPath());
+                $uploadedFile = $request->file('image');
+                $fileContent = file_get_contents($uploadedFile->getRealPath());
 
-            // Save new file
-            Storage::disk('public')->put("labels/{$newFilename}", $fileContent);
-            $employee->image_path = $newFilename;
-        } else {
-            // Update filename if name or ID changed but no new image was uploaded
-            $newFilename = "{$request->name}_{$request->employee_id}.jpg";
-            if ($employee->image_path !== $newFilename) {
+                Storage::disk('public')->put("labels/{$newFilename}", $fileContent);
+                $employee->image_path = $newFilename;
+                
+            } elseif ($employee->image_path !== $newFilename) {
                 Storage::disk('public')->move('labels/' . $employee->image_path, 'labels/' . $newFilename);
                 $employee->image_path = $newFilename;
             }
-        }
         
         $employee->save();
 
+        if ($hasEmployeeIdChanged) {
+            \App\Models\Attendance::where('employee_id', $originalEmployeeId)
+                ->update(['employee_id' => $request->employee_id]);
+        }
+
+        DB::commit();
+
         return redirect()->route('employees.list')->with('success', 'Employee updated successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            Log::error("Employee Update Failed: " . $e->getMessage());
+            return redirect()->back()->with('error', 'Update failed: An internal error occurred.');
+        }
     }
 }

@@ -10,8 +10,8 @@
 
     @section('content')
         <div class="jumbotron text-center">
-            <h1 class="display-4">Welcome to the Attendance App!</h1>
-            <p class="lead">Use the navigation bar to get started.</p>
+            <h1 class="display-4">Selamat Datang!</h1>
+            <p class="lead">Navigasi di atas akan membawa anda ke halaman lain.</p>
         </div>
     @endsection
 </body>

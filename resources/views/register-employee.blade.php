@@ -16,6 +16,12 @@
                     <div class="card-body">
                         <form action="/register-employee" method="POST" enctype="multipart/form-data">
                             @csrf
+                            
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Pilih Foto (Format: nama_id.jpg/png)</label>
+                                <input type="file" class="form-control" id="image" name="image" required accept="image/jpeg,image/jpg,image/png">
+                            </div>
+                            
                             <div class="mb-3">
                                 <label for="name" class="form-label">Nama Pekerja</label>
                                 <input type="text" class="form-control" id="name" name="name" required disabled>
@@ -28,12 +34,12 @@
                                 <label for="title" class="form-label">Posisi</label>
                                 <select class="form-select" id="title" name="title" required>
                                     <option value="" selected disabled>Pilih Posisi</option>
-                                    <option value="Leader">Pemimpin</option>
-                                    <option value="Vice-Leader">Wakil</option>
-                                    <option value="Security">Sekuriti</option>
-                                    <option value="Admin">Atmin</option>
-                                    <option value="Secretary">Sekretaris</option>
-                                    <option value="Employee">Pekerja</option>
+                                    <option value="Pemimpin">Pemimpin</option>
+                                    <option value="Wakil">Wakil</option>
+                                    <option value="Sekuriti">Sekuriti</option>
+                                    <option value="Atmin">Atmin</option>
+                                    <option value="Sekretaris">Sekretaris</option>
+                                    <option value="Pekerja">Pekerja</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-primary">Register Pekerja</button>
@@ -45,21 +51,30 @@
 
         <script>
             document.getElementById('image').addEventListener('change', function(event) {
-                const fileName = event.target.files[0].name;
-                const label = fileName.split('.')[0]; 
+                const fileInput = event.target;
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    return;
+                }
+                
+                const fileName = fileInput.files[0].name;
+                const label = fileName.substring(0, fileName.lastIndexOf('.')) || fileName; 
                 const parts = label.split('_');
 
-                if (parts.length === 2) {
-                    document.getElementById('name').value = parts[0];
-                    document.getElementById('employee_id').value = parts[1];
-                    document.getElementById('name').disabled = false;
-                    document.getElementById('employee_id').disabled = false;
+                const nameInput = document.getElementById('name');
+                const idInput = document.getElementById('employee_id');
+
+                if (parts.length === 2 && parts[0] && parts[1]) {
+                    nameInput.value = parts[0];
+                    idInput.value = parts[1];
+                    nameInput.disabled = false;
+                    idInput.disabled = false;
                 } else {
-                    alert('Invalid file name format. Please use "name_id.JPG".');
-                    document.getElementById('name').value = '';
-                    document.getElementById('employee_id').value = '';
-                    document.getElementById('name').disabled = true;
-                    document.getElementById('employee_id').disabled = true;
+                    alert('Invalid file name format. Please use "name_id.jpg/png".');
+                    nameInput.value = '';
+                    idInput.value = '';
+                    nameInput.disabled = true;
+                    idInput.disabled = true;
+                    fileInput.value = ''; 
                 }
             });
         </script>

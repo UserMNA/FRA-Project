@@ -13,7 +13,7 @@ Route::get('/face', function () {
 Route::get('/attendance-download', [AttendanceController::class, 'downloadExcel'])->name('attendance.download');
 Route::get('/attendance-pdf', [AttendanceController::class, 'downloadPDF'])->name('attendance.pdf');
 Route::get('/attendance-view', [AttendanceController::class, 'showView']);
-Route::get('/register-employee', [EmployeeController::class, 'showRegistrationForm']);
+Route::get('/register-employee', [EmployeeController::class, 'showRegistrationForm'])->name('employees.register.form');
 Route::post('/register-employee', [EmployeeController::class, 'register']);
 Route::get('/employees', [EmployeeController::class, 'showEmployeeList'])->name('employees.list');
 Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('employees.destroy');
